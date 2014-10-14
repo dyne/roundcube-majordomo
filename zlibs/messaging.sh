@@ -1,7 +1,6 @@
 #!/usr/bin/env zsh
 
 init_commandline() {
-    local -A subcommands_opts
     ### Options configuration
     #
     # Hi, dear developer!  Are you trying to add a new subcommand, or
@@ -65,6 +64,7 @@ init_commandline() {
     set -A cmd_opts ${main_opts} ${=subcommands_opts[$subcommand]}
     # if there is no option, we don't need parsing
     if [[ -n $cmd_opts ]]; then
+        # here is declared opts=
         zparseopts -M -E -D -Aopts ${cmd_opts}
         if [[ $? != 0 ]]; then
             _warning "Some error occurred during option processing."
@@ -167,7 +167,7 @@ function _message say act() {
 }
 
 function _verbose xxx func() {
-    option_is_set -D && _msg verbose $@
+    option_is_set -D || [[ $DEBUG = 1 ]] && _msg verbose $@
     return 0
 }
 

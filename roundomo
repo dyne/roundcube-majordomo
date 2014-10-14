@@ -32,7 +32,7 @@ DIR=${ROUNDOMO:-`pwd`}
 
 # For gettext
 TEXTDOMAIN=roundomo
-typeset -AH opts
+
 
 source $DIR/zlibs/messaging.sh
 
@@ -130,6 +130,9 @@ EOF
 }
 
 # main()
+
+typeset -A opts
+typeset -A subcommands_opts
 
 main_opts=(q -quiet=q D -debug=D h -help=h v -version=v -no-color)
 subcommands_opts[__default]=""
