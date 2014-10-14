@@ -24,6 +24,8 @@ DEBUG=0
 
 SCRIPT=$0
 
+TEST=0
+
 # export ROUNDOMO to env with path to the installation
 # else start it from inside the dir with ./dowse
 DIR=${ROUNDOMO:-`pwd`}
@@ -49,15 +51,22 @@ myquery() {
 [[ "$1" == "login" ]] && {
     mysql -u $roundcube_db_user -p$roundcube_db_pass $roundcube_db; return 0 }
 
+
+
 # this function is specific to our setup at dyne.org
 # feel free to create new ones as it may fit
 check_vmail_folders() {
     email="$1"
     domain=`print "$email" | cut -d@ -f2`
     name=`print "$email" | cut -d@ -f1`
-    maildirmake $vmail_path/$domain/$name/Maildir/.priv
-    maildirmake $vmail_path/$domain/$name/Maildir/.unsorted
-    maildirmake $vmail_path/$domain/$name/Maildir/.spam
+    func "maildirmake $vmail_path/$domain/$name/Maildir/.priv"
+    func "maildirmake $vmail_path/$domain/$name/Maildir/.unsorted"
+    func "maildirmake $vmail_path/$domain/$name/Maildir/.spam"
+    [[ $TEST = 1 ]] || {
+        maildirmake $vmail_path/$domain/$name/Maildir/.priv
+        maildirmake $vmail_path/$domain/$name/Maildir/.unsorted
+        maildirmake $vmail_path/$domain/$name/Maildir/.spam
+    }
 }
 
 whitelist() {
@@ -115,12 +124,19 @@ fileinto "unsorted";
 EOF
     
     act "sieve filter generated"
-    cp -v ".$user.sieve" $sieve_path/$user
+    func "cp .$user.sieve $sieve_path/$user"
+    [[ $TEST = 1 ]] || { 
+        cp ".$user.sieve" $sieve_path/$user
+    }
 }
 
 # main()
 [[ -r $DIR/roundomo.users ]] || {
     error "roundomo.users is not configured with a list of users."; return 1 }
+
+case "$subcommand" in
+    test) TEST=1 ;;
+esac
 
 roundomo_users=`awk '/^#/ {next} {print $0}' $DIR/roundomo.users`
 for u in ${(f)roundomo_users}; do
