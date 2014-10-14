@@ -1,0 +1,130 @@
+#!/usr/bin/env zsh
+#
+# Copyright (C) 2014 Denis Roio <jaromil@dyne.org>
+#
+# This source  code is free  software; you can redistribute  it and/or
+# modify it under the terms of  the GNU Public License as published by
+# the Free  Software Foundation; either  version 3 of the  License, or
+# (at your option) any later version.
+#
+# This source code is distributed in  the hope that it will be useful,
+# but  WITHOUT ANY  WARRANTY;  without even  the  implied warranty  of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+# Please refer to the GNU Public License for more details.
+#
+# You should have received a copy of the GNU Public License along with
+# this source code; if not, write to:
+# Free Software Foundation, Inc., 675 Mass Ave, Cambridge, MA 02139, USA.
+
+VERSION=0.1
+DATE="Oct/2014"
+
+QUIET=0
+DEBUG=0
+
+SCRIPT=$0
+
+# export ROUNDOMO to env with path to the installation
+# else start it from inside the dir with ./dowse
+DIR=${ROUNDOMO:-`pwd`}
+
+# For gettext
+TEXTDOMAIN=roundomo
+typeset -AH opts
+
+source $DIR/zlibs/messaging.sh
+
+init_commandline ${=argv}
+
+# system configuration
+[[ -r $DIR/roundomo.conf ]] || {
+    error "configuration not found: roundomo.conf"; return 1 }
+
+source $DIR/roundomo.conf
+
+myquery() {
+    mysql -B -N -L -u $roundcube_db_user -p$roundcube_db_pass $roundcube_db }
+
+# quick command to login into the database to debug schemas
+[[ "$1" == "login" ]] && {
+    mysql -u $roundcube_db_user -p$roundcube_db_pass $roundcube_db; return 0 }
+
+# this function is specific to our setup at dyne.org
+# feel free to create new ones as it may fit
+check_vmail_folders() {
+    email="$1"
+    domain=`print "$email" | cut -d@ -f2`
+    name=`print "$email" | cut -d@ -f1`
+    maildirmake $vmail_path/$domain/$name/Maildir/.priv
+    maildirmake $vmail_path/$domain/$name/Maildir/.unsorted
+    maildirmake $vmail_path/$domain/$name/Maildir/.spam
+}
+
+whitelist() {
+    [[ "$1" == "" ]] && { error "no user specified to whitelist()"; return 1 }    
+    user="$1"
+    check_user="select user_id from users where username='$user';"
+    user_id=`print $check_user | myquery`
+    
+    [[ "$user_id" == "" ]] && { error "user not found: $user"; return 1 }
+    
+    notice "Roundomo taking care of: $user (id: $user_id)"
+
+    check_vmail_folders "$user"
+
+    list_contacts="select email from contacts where user_id='$user_id';"
+    contacts=(`print $list_contacts | myquery`)
+    contacts_count=${#contacts}
+    act "contacts found in addressbook: ${contacts_count}"
+    [[ $contacts_count == 0 ]] && return 1
+    
+    contacts_hash="`print ${=contacts}|sha1sum|awk '{print $1}'`"
+    
+    [[ -r ".$user" ]] && {
+	contacts_hash_prev=`cat ".$user"`
+	[[ "$contacts_hash_prev" == "$contacts_hash" ]] && {
+	    act "no new contacts detected."; return 0 }
+    }
+    
+    act "refreshing whitelist with new contacts"
+    print "$contacts_hash" > ".$user"
+    
+    cat <<EOF > ".$user.sieve"
+require "fileinto";
+if header :contains "From" [
+EOF
+    for i in $contacts; do
+	print -n "\"$i\"" >> ".$user.sieve"
+	contacts_count=$(( $contacts_count - 1 ))
+	[[ $contacts_count -gt 0 ]] && {
+	    print -n "," >> ".$user.sieve" }
+	print >> ".$user.sieve"
+    done
+    cat <<EOF >> ".$user.sieve"
+]
+{ fileinto "INBOX"; stop; }
+
+# spam
+if header :is "X-Spam-Flag" "YES" {
+    fileinto "spam"; stop;
+}
+
+if header :contains [ "To","Cc" ] "$user" { fileinto "priv"; stop; }
+
+fileinto "unsorted";
+EOF
+    
+    act "sieve filter generated"
+    cp -v ".$user.sieve" $sieve_path/$user
+}
+
+# main()
+[[ -r $DIR/roundomo.users ]] || {
+    error "roundomo.users is not configured with a list of users."; return 1 }
+
+roundomo_users=`awk '/^#/ {next} {print $0}' $DIR/roundomo.users`
+for u in ${(f)roundomo_users}; do
+    whitelist "$u"
+done
+
+
