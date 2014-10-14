@@ -36,7 +36,6 @@ typeset -AH opts
 
 source $DIR/zlibs/messaging.sh
 
-init_commandline ${=argv}
 
 # system configuration
 [[ -r $DIR/roundomo.conf ]] || {
@@ -131,11 +130,18 @@ EOF
 }
 
 # main()
+
+main_opts=(q -quiet=q D -debug=D h -help=h v -version=v -no-color)
+subcommands_opts[__default]=""
+subcommands_opts[test]=""  
+
+init_commandline ${=argv}
+
 [[ -r $DIR/roundomo.users ]] || {
     error "roundomo.users is not configured with a list of users."; return 1 }
 
 case "$subcommand" in
-    test) TEST=1 ;;
+    test) TEST=1 ; DEBUG=1 ;;
 esac
 
 roundomo_users=`awk '/^#/ {next} {print $0}' $DIR/roundomo.users`

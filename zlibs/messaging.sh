@@ -1,3 +1,4 @@
+#!/usr/bin/env zsh
 
 init_commandline() {
     local -A subcommands_opts
@@ -22,8 +23,6 @@ init_commandline() {
     # -force and NOT -f
     #
 
-    main_opts=(q -quiet=q D -debug=D h -help=h v -version=v -no-color)
-    subcommands_opts[__default]=""
 
     ### Detect subcommand
     local -aU every_opts #every_opts behave like a set; that is, an array with unique elements
