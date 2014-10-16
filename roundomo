@@ -98,7 +98,7 @@ whitelist() {
     print "$contacts_hash" > ".$user"
     
     cat <<EOF > ".$user.sieve"
-require "fileinto";
+require ["fileinto","mailbox","variables"];
 if header :contains "From" [
 EOF
     for i in $contacts; do
@@ -114,10 +114,12 @@ EOF
 
 # spam
 if header :is "X-Spam-Flag" "YES" {
-    fileinto "spam"; stop;
+    fileinto :create "zz.spam"; stop;
 }
 
-if header :contains [ "To","Cc" ] "$user" { fileinto "priv"; stop; }
+if header :contains [ "To","Cc" ] "$user" {
+    fileinto :create "priv"; stop;
+}
 
 # lists auto filters
 if header :matches "List-Id" "*<*>" {
@@ -131,7 +133,7 @@ if anyof (header :contains "X-Mailman-Version" ".",
           header :contains "Mailing-List" ".") {
   fileinto :create "lists.unsorted"; stop; }
 
-fileinto "unsorted";
+fileinto :create "unsorted";
 EOF
     
     act "sieve filter generated"
