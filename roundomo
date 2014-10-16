@@ -137,6 +137,10 @@ fileinto :create "unsorted";
 EOF
     
     act "sieve filter generated"
+    sievec .$user.sieve
+    [[ $? = 0 ]] || {
+        error "error: filters don't compile."; return 1 }
+    
     func "cp .$user.sieve $sieve_path/$user"
     [[ $TEST = 1 ]] || { 
         cp ".$user.sieve" $sieve_path/$user
