@@ -51,23 +51,6 @@ myquery() {
     mysql -u $roundcube_db_user -p$roundcube_db_pass $roundcube_db; return 0 }
 
 
-
-# this function is specific to our setup at dyne.org
-# feel free to create new ones as it may fit
-check_vmail_folders() {
-    email="$1"
-    domain=`print "$email" | cut -d@ -f2`
-    name=`print "$email" | cut -d@ -f1`
-    func "maildirmake $vmail_path/$domain/$name/Maildir/.priv"
-    func "maildirmake $vmail_path/$domain/$name/Maildir/.unsorted"
-    func "maildirmake $vmail_path/$domain/$name/Maildir/.spam"
-    [[ $TEST = 1 ]] || {
-        maildirmake $vmail_path/$domain/$name/Maildir/.priv
-        maildirmake $vmail_path/$domain/$name/Maildir/.unsorted
-        maildirmake $vmail_path/$domain/$name/Maildir/.spam
-    }
-}
-
 whitelist() {
     [[ "$1" == "" ]] && { error "no user specified to whitelist()"; return 1 }    
     user="$1"
@@ -77,8 +60,6 @@ whitelist() {
     [[ "$user_id" == "" ]] && { error "user not found: $user"; return 1 }
     
     notice "Roundomo taking care of: $user (id: $user_id)"
-
-    check_vmail_folders "$user"
 
     list_contacts="select email from contacts where user_id='$user_id';"
     contacts=(`print $list_contacts | myquery`)
