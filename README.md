@@ -13,11 +13,14 @@ Roundomo runs from /vmail/'s crontab, which is usually the Dovecot user. It read
 Roundcube majordomo is there to organize the e-mail workflow so that one's attention is dedicated to important communications, rather than being constantly distracted by various degrees of spam and the need to weed it out of the mailbox. This ambitious task is pursued by realizing an integrated approach consisting of flexible whitelisting and the distinction between mails from known people and the rest.
 
 
- Folder         | What goes in there
-----------------|--------------------------------------------------
- *INBOX*        | Mails whose sender is known (Whitelist)
- *priv*         | Unknown sender, we are the explicit destination
- *unsorted*     | Unknown sender, we are in cc: or somehow reached
+Folder         | What goes in there
+---------------|--------------------------------------------------
+**INBOX**      | Mails whose sender is known (Whitelist)
+**priv**       | Unknown sender, we are the explicit destination
+**unsorted**   | Unknown sender, we are in cc: or somehow reached
+**lists.**     | Mailinglists grouped per address and domain name
+**zz.spam**    | Spam detected and marked as such in the headers
+**zz.bounces** | Warnings and mailman bounces of sorts
 
 The advantage using such a folder organization is that every time we open up the mail reader (quickly checking INBOX from our phone, for instance) we will be presented with something we are likely to be most interested in (known people replying our mails) and progressively, as we will have the time to scroll through, mails from "new people" or mass mailings of sort. Please note this organization does not includes spam, which is supposedly weeded out on the server via spamlists: White/Blacklisting has more to do with our own selection of content sources than with the generic protection from random pieces of information.
 
