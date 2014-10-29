@@ -1,12 +1,15 @@
 # Roundcube Majordomo
-## Roundcube server-side helper, version 0.1
-### by Jaromil @ Dyne.org
+## Addressbook based whitelist
 
-Roundcube Majordomo, or Roundomo in brief, is a backend agent for Roundcube webmail setups that takes advantage of Sieve scripting language for server-side filtering into folders.
+Server-side extension to use the addressbook as whitelist.
 
-Roundomo is developed for the Dyne.org webmail and its targeted to be used on a Postfix/Dovecot2 setup supporting multiple domains.  An example of such a configuration is [detailed here](https://www.digitalocean.com/community/tutorials/how-to-configure-a-mail-server-using-postfix-dovecot-mysql-and-spamassasin).
+The whitelist helps prioritize messages received from known people, creating different folders for first-contact and non recipient emails.
 
-Roundomo runs from /vmail/'s crontab, which is usually the Dovecot user. It reads the users addressbook from roundcube and compiles a set of sieve filters to implement a whitelist system structured as 3-tier imap folder separation a'la [JaroMail](http://www.dyne.org/software/jaro-mail).
+The user interface of Roundcube stays the same, more IMAP folders are created automatically.
+
+anaging the whitelist is done normally via the addressbook, which can also import and export VCard files from and to mobile phones.
+
+This is not a Roundcube plugin: it is a server-side ZShell script to be run by Cron, generating a Sieve script usually processed by the Dovecot2 or Procmail LDA. Beware folders created are likely to be accessible only via IMAP.
 
 # Raison d'être
 
@@ -28,9 +31,11 @@ The advantage using such a folder organization is that every time we open up the
 For more information about this 3-tier imap folder system, see JaroMail's manual on:
 https://files.dyne.org/jaromail/jaromail-manual.pdf
 
-# Usage
+## Installation
 
-Once installed, roundcube webmail users can add or remove people from the addressbook, import addresses etc. and all the addressbook will be used to compose the whitelist automatically.
+Roundcube Majordomo, or Roundomo in brief, is a backend agent for Roundcube webmail setups that takes advantage of its easy to use addressbook interface and the Sieve scripting language for server-side filtering into folders.
+
+Roundomo is developed for the Dyne.org webmail and its targeted to be used on a Postfix/Dovecot2 setup supporting multiple domains.  An example of such a configuration is [detailed here](https://www.digitalocean.com/community/tutorials/how-to-configure-a-mail-server-using-postfix-dovecot-mysql-and-spamassasin).
 
 # Disclaimer
 
