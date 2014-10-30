@@ -67,13 +67,17 @@ whitelist() {
     [[ $contacts_count == 0 ]] && return 1
     
     contacts_hash="`print ${=contacts}|sha1sum|awk '{print $1}'`"
-    
-    [[ -r ".$user" ]] && {
-	    contacts_hash_prev=`cat ".$user"`
-	    [[ "$contacts_hash_prev" == "$contacts_hash" ]] && {
-	        act "no new contacts detected."; return 0 }
+
+    # if --force is used then refresh whitelist for all account even
+    # if no new contacts have been detected
+    option_is_set -f || { 
+        [[ -r ".$user" ]] && {
+	        contacts_hash_prev=`cat ".$user"`
+	        [[ "$contacts_hash_prev" == "$contacts_hash" ]] && {
+	            act "no new contacts detected."; return 0 }
+        }
     }
-    
+
     act "refreshing whitelist with new contacts"
     
     cat <<EOF > ".$user.sieve"
@@ -138,7 +142,7 @@ EOF
 typeset -A opts
 typeset -A subcommands_opts
 
-main_opts=(q -quiet=q D -debug=D h -help=h v -version=v -no-color)
+main_opts=(q -quiet=q D -debug=D h -help=h v -version=v f -force=f -no-color)
 subcommands_opts[__default]=""
 subcommands_opts[test]=""  
 
