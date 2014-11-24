@@ -120,6 +120,21 @@ if anyof (header :contains "X-Mailman-Version" ".",
           header :contains "Mailing-List" ".") {
   fileinto :create "lists.unsorted"; stop; }
 
+# social networks
+if header :contains "From" "basecamp" { fileinto :create "zz.social"; stop; }
+if header :contains "From" "linkedin.com" { fileinto :create "zz.social"; stop; }
+if header :contains "From" "github.com" { fileinto :create "zz.social"; stop; }
+if header :contains "From" "facebook" { fileinto :create "zz.social"; stop; }
+if header :contains "From" "FriendFeed" { fileinto :create "zz.social"; stop; }
+if header :contains "From" "twitter.com" { fileinto :create "zz.social"; stop; }
+if header :contains "From" "identi.ca" { fileinto :create "zz.social"; stop; }
+if header :contains "From" "wmt-noreply@google" { fileinto :create "zz.social"; stop; }
+if header :contains "From" "plus.google.com" { fileinto :create "zz.social"; stop; }
+if header :contains "From" "launchpad" { fileinto :create "zz.social"; stop; }
+if header :contains "From" "statusnet" { fileinto :create "zz.social"; stop; }
+if header :contains "From" "googlealerts" { fileinto :create "zz.social"; stop; }
+if header :contains "From" "youtube.com" { fileinto :create "zz.social"; stop; }
+
 fileinto :create "unsorted";
 EOF
     
